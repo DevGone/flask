@@ -3,7 +3,7 @@ LOCAL = 0
 def correctUrl():
 	if LOCAL == 1 :
 		url = ""
-	else 
+	else :
 		url = "http://raspberricdevgone.ddns.net/"
 	return url
 
