@@ -1,7 +1,7 @@
 import urllib2
 from datetime import datetime, timedelta
 
-LOCAL = 0
+LOCAL = 1
 
 def correct_url():
 	if LOCAL == 1 :

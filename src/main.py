@@ -1,10 +1,16 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from raspberric import get_history
+import urllib2
 app = Flask(__name__)
 
 @app.route("/")
 def root():
-    return "Yo bitch !"
+	req = urllib2.Request("http://devgone.herokuapp.com/measures/")
+	req.data = jsonify(status="prout").data
+	req.get_method = lambda: "POST"
+	response = urllib2.urlopen(req)
+	data = response.read()
+	return "Yo bitch !" + str(data)
 
 #field : papp
 #step : step in seconds to get data
