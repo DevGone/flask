@@ -1,24 +1,26 @@
-import urllib2
+import requests
 from datetime import datetime, timedelta
 
-LOCAL = 1
+LOCAL = 0
 
 def correct_url():
 	if LOCAL == 1 :
-		url = "http://rpic-remixmyenergy-edf.local/"
+		return "http://rpic-remixmyenergy-edf.local/"
 	else :
-		url = "http://raspberricdevgone.ddns.net/"
-	return url
+		return "http://raspberricdevgone.ddns.net/"
 
 def get_history(field, step, duration_type, duration):
 	begin_datetime = get_begin_date(duration_type, duration)
 	begin_date = convert_date(begin_datetime - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
-	date = convert_date(datetime.now() - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
-	print correct_url() + 'history?field=' + field + '&limit=none&step=' + step +'&begin=' + begin_date + 'Z&end=' + date + 'Z'
-	req = urllib2.Request(correct_url() + 'history?field=' + field + '&limit=none&step=' + step +'&begin=' + begin_date + 'Z&end=' + date + 'Z')
-	response = urllib2.urlopen(req)
-	data = response.read()
-	return data
+	end_date = convert_date(datetime.now() - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
+	limit = 'none'
+
+	url = correct_url() + "history"
+
+	params = {'field': field, 'limit': limit, 'step': step, 'begin': begin_date, 'end': end_date}
+
+	req = requests.get(url, params=params)
+	return req.text
 
 def get_begin_date(duration_type, duration):
 	if duration_type == "week" :
@@ -33,4 +35,4 @@ def get_begin_date(duration_type, duration):
 		return datetime.now() - timedelta(seconds=int(duration))
 
 def convert_date(value):
-	return str(datetime.date(value)) + 'T' + str(datetime.time(value))
+	return str(datetime.date(value)) + 'T' + str(datetime.time(value)) + 'Z'
