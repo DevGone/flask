@@ -25,6 +25,6 @@ def bgr():
 	print "coucou"
 
 if __name__ == "__main__":
+	polling(5, bgr)
 	app.debug = True
-	polling(1, bgr)
 	app.run()

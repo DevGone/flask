@@ -37,5 +37,6 @@ def convert_date(value):
 	return str(datetime.date(value)) + 'T' + str(datetime.time(value))
 
 def polling(timeInterval, callback):
-  threading.Timer(timeInterval, polling).start()
+  thread = threading.Timer(timeInterval, lambda: polling(timeInterval, callback))
+  thread.daemon = True
   callback()
