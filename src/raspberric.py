@@ -1,4 +1,4 @@
-import requests
+import threading, requests
 from datetime import datetime, timedelta
 
 LOCAL = 0
@@ -36,3 +36,8 @@ def get_begin_date(duration_type, duration):
 
 def convert_date(value):
 	return str(datetime.date(value)) + 'T' + str(datetime.time(value)) + 'Z'
+
+def polling(timeInterval, callback):
+  thread = threading.Timer(timeInterval, lambda: polling(timeInterval, callback))
+  thread.daemon = True
+  callback()
