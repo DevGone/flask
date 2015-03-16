@@ -17,5 +17,5 @@ def gethistory():
 	return get_history(request.args.get('field'), request.args.get('step'), request.args.get('duration_type'), request.args.get('duration'))
 
 if __name__ == "__main__":
-	startPollingRaspberric(5)
+	startPollingRaspberric(60)
 	app.run()
