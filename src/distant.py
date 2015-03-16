@@ -3,10 +3,10 @@ from raspberric import get_history, getRaspberricId
 
 POLLING = False
 
-def polling(timeInterval):
+def polling(timeInterval, callback):
 	i = 0
 	while True:
-		repeatTask(i)
+		callback(i)
 		time.sleep(timeInterval)
 		i+=1
 
@@ -32,6 +32,19 @@ def startPollingRaspberric(timeInterval):
 	if "polling" not in startPollingRaspberric.__dict__:
 		startPollingRaspberric.polling = True
 		print 'Start polling'
-		thread = threading.Thread(target=polling, name='Polling', kwargs={'timeInterval': timeInterval})
+		thread = threading.Thread(target=polling, name='Polling', kwargs={'timeInterval': timeInterval, 'callback': repeatTask})
 		thread.daemon = True
 		thread.start()
+
+def ping(pingId, url="http://devgone.herokuapp.com/"):
+	req = requests.get(url)
+	print 'Pinged Heroku: ' + str(req.status_code)
+
+def startHerokuIdlingPrevention():
+	if "polling" not in startHerokuIdlingPrevention.__dict__:
+		startHerokuIdlingPrevention.polling = True
+		print 'Start idling prevention'
+		thread = threading.Thread(target=polling, name='Idling', kwargs={'timeInterval': 60*10, 'callback': ping})
+		thread.daemon = True
+		thread.start()
+

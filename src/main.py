@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from raspberric import get_history
-from distant import startPollingRaspberric
+from distant import startPollingRaspberric, startHerokuIdlingPrevention
 
 app = Flask(__name__)
 
@@ -18,4 +18,5 @@ def gethistory():
 
 if __name__ == "__main__":
 	startPollingRaspberric(60)
+	startHerokuIdlingPrevention()
 	app.run()
