@@ -3,6 +3,9 @@ from raspberric import get_history, getRaspberricId
 
 POLLING = False
 
+SERVER = "http://devgone.herokuapp.com"
+SERVER = "http://localhost:3000"
+
 def polling(timeInterval, callback):
 	i = 0
 	while True:
@@ -18,7 +21,7 @@ def fetchRaspberricData(measureId):
 	data = json.dumps({'measure_id': measureId, 'raspberric_id': raspberricId, 'measure': measure})
 	return data
 
-def sendData(data, url="http://devgone.herokuapp.com/measures/"):
+def sendData(data, url=SERVER+"/measures/"):
 	headers = {'content-type': 'application/json'}
 	req = requests.post(url, data=data, headers=headers)
 	return req.text
@@ -36,7 +39,7 @@ def startPollingRaspberric(timeInterval):
 		thread.daemon = True
 		thread.start()
 
-def ping(pingId, url="http://devgone.herokuapp.com/"):
+def ping(pingId, url=SERVER):
 	req = requests.get(url)
 	print 'Pinged Heroku: ' + str(req.status_code)
 
