@@ -36,3 +36,6 @@ def get_begin_date(duration_type, duration):
 
 def convert_date(value):
 	return str(datetime.date(value)) + 'T' + str(datetime.time(value)) + 'Z'
+
+def getRaspberricId():
+	return 'vf6sxo78'

@@ -18,5 +18,4 @@ def gethistory():
 
 if __name__ == "__main__":
 	startPollingRaspberric(5)
-	app.debug = True
 	app.run()
