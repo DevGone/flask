@@ -1,5 +1,5 @@
 import threading, time, requests, json
-from raspberric import get_history, getRaspberricId
+from raspberric import get_history_from_now, getRaspberricId
 
 POLLING = False
 
@@ -16,7 +16,7 @@ def polling(timeInterval, callback):
 def fetchRaspberricData(measureId):
 	print 'Fetching data from raspberric...'
 	raspberricId = getRaspberricId();
-	measure = json.loads(get_history("papp", 60*60, 'hour', 24))
+	measure = json.loads(get_history_from_now("papp", 60*60, 'hour', 24))
 	print 'Data fetched'
 	data = json.dumps({'measure_id': measureId, 'raspberric_id': raspberricId, 'measure': measure})
 	return data
