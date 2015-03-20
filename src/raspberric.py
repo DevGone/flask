@@ -9,7 +9,7 @@ def correct_url():
 	else :
 		return "http://raspberricdevgone.ddns.net/"
 
-def get_history(field, step, duration_type, duration):
+def get_history_from_now(field, step, duration_type, duration):
 	begin_datetime = get_begin_date(duration_type, duration)
 	begin_date = convert_date(begin_datetime - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
 	end_date = convert_date(datetime.now() - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
