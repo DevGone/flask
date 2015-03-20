@@ -4,7 +4,7 @@ from raspberric import get_history, getRaspberricId
 POLLING = False
 
 SERVER = "http://devgone.herokuapp.com"
-SERVER = "http://localhost:3000"
+#SERVER = "http://localhost:3000"
 
 def polling(timeInterval, callback):
 	i = 0
