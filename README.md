@@ -21,8 +21,13 @@ HHPHC : Groupe horaire si option = heures creuses = pas de valeurs
 
 Info qui peuvent être interessantes depuis l'API du raspberric :
 
+/source
+->adco : id  du compteur
+
 /source/1/price-option
+->adco : id  du compteur
 -> begin date : date du branchement du raspberry
+-> price option : option tarifiaire du compteur pour ensuite calculer la conso
 
 /source/1/event
 -> retourne les évenements (mais aucun pour l'instant ex:anomalie réacteur nucléaire)
