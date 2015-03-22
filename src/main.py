@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from distant import startPollingRaspberric, startHerokuIdlingPrevention
-from raspberric import get_history_from_now, get_consumption_from_now
+from raspberric import get_history_from_now, get_consumption_from_now, get_yesterday_consumption, get_informations
 import requests
 
 app = Flask(__name__)
@@ -20,6 +20,14 @@ def gethistory():
 @app.route("/getconsumptionfromnow", methods=['GET'])
 def getconsumptionfromnow():
 	return get_consumption_from_now(request.args.get('step'), request.args.get('duration_type'), request.args.get('duration'))
+
+@app.route("/getyesterdayconsumption", methods=['GET'])
+def getyesterdayconsumption():
+	return get_yesterday_consumption()
+
+@app.route("/getinformations", methods=['GET'])
+def getinformations():
+	return get_informations()
 
 if __name__ == "__main__":
 	startPollingRaspberric(60)
