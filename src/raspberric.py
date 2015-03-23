@@ -2,7 +2,7 @@ import requests
 from datetime import datetime, timedelta
 import json
 
-LOCAL = 1
+LOCAL = 0
 
 def correct_url():
 	if LOCAL == 1 :
@@ -22,15 +22,10 @@ def get_history_from_now(field, step, duration_type, duration):
 
 # Get information about the installation : compteur id, price option and begin date
 def get_informations():
-	url = correct_url() + "source/1/price_option"
+	url = correct_url() + "source/1/price-option"
 	params = {}
 	req = requests.get(url, params=params)
-	all_informations = json.loads(req.text)
-	compteur_id = all_informations['data']['source']['parameters']['adco']
-	begin_date = all_informations['data']['begin']
-	price_option = all_informations['data']['price_option']['name']
-	data = json.dumps({'compteur_id': compteur_id, 'begin_date': begin_date, 'price_option': price_option})
-	return data
+	return req.text
 
 def get_compteur_id():
 	all_informations = json.loads(get_informations())
@@ -49,10 +44,10 @@ def get_price_option():
 
 def convert_price_option_to_field(price_option):
 	if price_option == "HP/HC" :
-		value = "hchp"
-	return value
+		return "hchp"
+	return "base"
 
-#TODO : réflechir à une optimisation (as besoin de remonter toutes les données au milieu des deux dates)
+#TODO : reflechir a une optimisation (as besoin de remonter toutes les donnees au milieu des deux dates)
 def get_consumption(begin_date, end_date, step):
 	url = correct_url() + "history"
 	params = {'field': convert_price_option_to_field(), 'limit': 'none', 'step': step, 'begin': begin_date, 'end': end_date}
@@ -61,10 +56,10 @@ def get_consumption(begin_date, end_date, step):
 	all_consumption = json.loads(req.text)
 	all_consumption_lenght = len(all_consumption['data'])
 	consumption = all_consumption['data'][0]['value'] - all_consumption['data'][all_consumption_lenght-1]['value']
-	return str(consumption)
+	return req.text
 
 # Get consumption from a date to now in Watt-heure
-#TODO : verifier impact du pattern sur résultat
+#TODO : verifier impact du pattern sur resultat
 def get_consumption_from_now(step, duration_type, duration) :
 	url = correct_url() + "history"
 	begin_datetime = get_begin_date(duration_type, duration)
@@ -79,7 +74,7 @@ def get_consumption_from_now(step, duration_type, duration) :
 	all_consumption = json.loads(req.text)
 	all_consumption_lenght = len(all_consumption['data'])
 	consumption = all_consumption['data'][0]['value'] - all_consumption['data'][all_consumption_lenght-1]['value']
-	return str(consumption)
+	return req.text
 
 # Get consumption of the last 24 hours
 #TODO : verifier que y a pas un decallage qui fait manquer une valeur

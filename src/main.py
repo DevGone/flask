@@ -30,7 +30,7 @@ def getinformations():
 	return get_informations()
 
 if __name__ == "__main__":
-	startPollingRaspberric(60)
+	raspberric_data = get_informations()
+	startPollingRaspberric(60, raspberric_data)
 	startHerokuIdlingPrevention()
-	app.debug = True
 	app.run()
