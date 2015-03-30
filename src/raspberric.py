@@ -1,86 +1,78 @@
-import requests
 from datetime import datetime, timedelta
+import requests
 import json
 
-LOCAL = 0
+LOCAL_ORIANE = 0
+LOCAL_OTHER = 0
 
-def correct_url():
-	if LOCAL == 1 :
-		return "http://rpic-remixmyenergy-edf.local/"
-	else :
-		return "http://raspberricdevgone.ddns.net/"
+#TODO : Change to put the other raspberric adress
+# Get the correct raspberric url depending if the programm is working in the local network or not by raspberric id
+def correct_url(raspberricId):
+	if raspberricId == 'vf6sxo78' :
+		if LOCAL_ORIANE == 1 :
+			return "http://rpic-remixmyenergy-edf.local/"
+		else :
+			return "http://raspberricdevgone.ddns.net/"
+	else : 
+		if LOCAL_OTHER == 1 :
+			return "http://rpic-remixmyenergy-edf.local/"
+		else :
+			return "http://raspberricdevgone.ddns.net/"
 
-def get_history_from_now(field, step, duration_type, duration):
-	begin_datetime = get_begin_date(duration_type, duration)
-	begin_date = convert_date(begin_datetime - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
-	end_date = convert_date(datetime.now() - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
-	limit = 'none'
-	url = correct_url() + "history"
-	params = {'field': field, 'limit': limit, 'step': step, 'begin': begin_date, 'end': end_date}
-	req = requests.get(url, params=params)
-	return req.text
-
-# Get information about the installation : compteur id, price option and begin date
-def get_informations():
-	url = correct_url() + "source/1/price-option"
+# Get information about the installation by raspberric id
+def get_informations(raspberricId):
+	url = correct_url(raspberricId) + "source/1/price-option"
 	params = {}
 	req = requests.get(url, params=params)
 	return req.text
 
-def get_compteur_id():
-	all_informations = json.loads(get_informations())
-	compteur_id = all_informations['data']['source']['parameters']['adco']
-	return compteur_id
-
-def get_begin_date():
-	all_informations = json.loads(get_informations())
-	begin_date = all_informations['data']['begin']
-	return begin_date
-
-def get_price_option():
-	all_informations = json.loads(get_informations())
-	price_option = all_informations['data']['price_option']['name']
+# Get price option slug by raspberric id
+def get_price_option(raspberricId):
+	all_informations = json.loads(get_informations(raspberricId))
+	price_option = all_informations['data'][0]['price-option']['slug']
 	return price_option
 
+#TODO : add more price options
+# Get field from the price option
 def convert_price_option_to_field(price_option):
-	if price_option == "HP/HC" :
+	if price_option == "hp-hc" :
 		return "hchp"
 	return "base"
 
-#TODO : reflechir a une optimisation (as besoin de remonter toutes les donnees au milieu des deux dates)
-def get_consumption(begin_date, end_date, step):
-	url = correct_url() + "history"
-	params = {'field': convert_price_option_to_field(), 'limit': 'none', 'step': step, 'begin': begin_date, 'end': end_date}
+#Get consumption by raspberric id, begin date, end date, step in seconds
+def get_consumption(raspberricId, begin_date, end_date, step):
+	url = correct_url(raspberricId) + "history"
+	price_option = get_price_option(raspberricId)
+	field = convert_price_option_to_field(price_option)
+	params = {'field': field, 'limit': 'none', 'step': step, 'begin': begin_date, 'end': end_date}
 	req = requests.get(url, params=params)
-
-	all_consumption = json.loads(req.text)
-	all_consumption_lenght = len(all_consumption['data'])
-	consumption = all_consumption['data'][0]['value'] - all_consumption['data'][all_consumption_lenght-1]['value']
 	return req.text
 
+#TODO : Verify number of hours to remove to make the raspberric work
 # Get consumption from a date to now in Watt-heure
-#TODO : verifier impact du pattern sur resultat
-def get_consumption_from_now(step, duration_type, duration) :
-	url = correct_url() + "history"
+def get_consumption_from_now(raspberricId, step, duration_type, duration) :
+	url = correct_url(raspberricId) + "history"
 	begin_datetime = get_begin_date(duration_type, duration)
-	begin_date = convert_date(begin_datetime - timedelta(hours=1))
-	end_date = convert_date(datetime.now() - timedelta(hours=1))
+	begin_date = convert_date(begin_datetime - timedelta(hours=3))
+	end_date = convert_date(datetime.now() - timedelta(hours=3))
 
-	field = "hchp"
-	limit = 'none'
-	params = {'field': field, 'limit': limit, 'step': step, 'begin': begin_date, 'end': end_date}
+	price_option = get_price_option(raspberricId)
+	field = convert_price_option_to_field(price_option)
+	params = {'field': field, 'limit': 'none', 'step': step, 'begin': begin_date, 'end': end_date, 'pattern': 'max'}
 	req = requests.get(url, params=params)
-
-	all_consumption = json.loads(req.text)
-	all_consumption_lenght = len(all_consumption['data'])
-	consumption = all_consumption['data'][0]['value'] - all_consumption['data'][all_consumption_lenght-1]['value']
 	return req.text
 
-# Get consumption of the last 24 hours
-#TODO : verifier que y a pas un decallage qui fait manquer une valeur
-def get_yesterday_consumption() :
-	return get_consumption_from_now(3600, 'day', 1)
 
+#TODO : verifier que y a pas un decallage qui fait manquer une valeur
+# Get consumption of the last 24 hours every hour
+def get_yesterday_consumption(raspberricId) :
+	return get_consumption_from_now(raspberricId, 3600, 'day', 1)
+
+# Get consumption of the last hour every 10 minutes
+def get_last_hour_consumption(raspberricId) :
+	return get_consumption_from_now(raspberricId, 600, 'hour', 1)
+
+# Get a date before now in fonction of duration type and duration value
 def get_begin_date(duration_type, duration):
 	if duration_type == "week" :
 		return datetime.now() - timedelta(weeks=int(duration))
@@ -93,8 +85,31 @@ def get_begin_date(duration_type, duration):
 	elif duration_type == "second" :
 		return datetime.now() - timedelta(seconds=int(duration))
 
+# Concert datetime in the system wanted by the raspberric
 def convert_date(value):
 	return str(datetime.date(value)) + 'T' + str(datetime.time(value)) + 'Z'
 
-def getRaspberricId():
-	return 'vf6sxo78'
+
+##### WE DON'T USE IT #######
+
+# Get compteur id by raspberric id
+def get_compteur_id(raspberricId):
+	all_informations = json.loads(get_informations(raspberricId))
+	compteur_id = all_informations['data'][0]['source']['parameters']['adco']
+	return compteur_id
+
+# Get records' begin date by raspberric id
+def get_raspberric_begin_date(raspberricId):
+	all_informations = json.loads(get_informations(raspberricId))
+	begin_date = all_informations['data'][0]['begin']
+	return begin_date
+
+# Get history from now
+def get_history_from_now(raspberricId, field, step, duration_type, duration):
+	begin_datetime = get_begin_date(duration_type, duration)
+	begin_date = convert_date(begin_datetime - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
+	end_date = convert_date(datetime.now() - timedelta(hours=1)) #need to remove 1 hour to get the same result as raspberric
+	url = correct_url(raspberricId) + "history"
+	params = {'field': field, 'limit': 'none', 'step': step, 'begin': begin_date, 'end': end_date}
+	req = requests.get(url, params=params)
+	return req.text

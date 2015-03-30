@@ -1,15 +1,15 @@
 import threading, time, requests, json
-from raspberric import get_yesterday_consumption, getRaspberricId
+from raspberric import get_last_hour_consumption, get_informations
 
 POLLING = False
 
 SERVER = "http://devgone.herokuapp.com"
 #SERVER = "http://localhost:3000"
 
-def polling(timeInterval, callback, raspberricData):
+def polling(timeInterval, callback, raspberricIds):
 	i = 0
 	while True:
-		callback(i, raspberricData)
+		callback(i, raspberricIds)
 		time.sleep(timeInterval)
 		i+=1
 
@@ -20,12 +20,15 @@ def idling(timeInterval):
 		time.sleep(timeInterval)
 		i+=1
 
-def fetchRaspberricData(measureId, raspberricData):
-	print 'Fetching data from raspberric...'
-	measure = json.loads(get_yesterday_consumption())
+def fetchRaspberricData(measureId, raspberricIds):
+	data = []
+	print 'Fetching data from raspberrics...'
+	for raspberricId in raspberricIds :
+		info = json.loads(get_informations(raspberricId))
+		measure = json.loads(get_last_hour_consumption(raspberricId))
+		jsonResult = parseResults(raspberricId, info, measure)
+		data.append(jsonResult)
 	print 'Data fetched'
-	data = json.loads(raspberricData)
-	data['measure'] = measure
 	return json.dumps(data)
 
 def sendData(data, url=SERVER+"/measures/"):
@@ -33,16 +36,16 @@ def sendData(data, url=SERVER+"/measures/"):
 	req = requests.post(url, data=data, headers=headers)
 	return req.text
 
-def repeatTask(measureId, raspberricData):
-	json = fetchRaspberricData(measureId, raspberricData)
+def repeatTask(measureId, raspberricIds):
+	json = fetchRaspberricData(measureId, raspberricIds)
 	sendData(json)
 	print 'Data sent'
 
-def startPollingRaspberric(timeInterval, raspberricData):
+def startPollingRaspberric(timeInterval, raspberricIds):
 	if "polling" not in startPollingRaspberric.__dict__:
 		startPollingRaspberric.polling = True
 		print 'Start polling'
-		thread = threading.Thread(target=polling, name='Polling', kwargs={'timeInterval': timeInterval, 'callback': repeatTask, 'raspberricData':raspberricData})
+		thread = threading.Thread(target=polling, name='Polling', kwargs={'timeInterval': timeInterval, 'callback': repeatTask, 'raspberricIds':raspberricIds})
 		thread.daemon = True
 		thread.start()
 
@@ -58,3 +61,19 @@ def startHerokuIdlingPrevention():
 		thread.daemon = True
 		thread.start()
 
+def parseResults(raspberricId, info, measure):
+	begin_date = info['data'][0]['begin']
+	price_option = info['data'][0]['price-option']['slug']
+
+	# Get delta of the total consumption
+	measure_lenght = len(measure['data'])
+	consumption = measure['data'][0]['value'] - measure['data'][measure_lenght-1]['value']
+
+	result = {}
+	result['raspberricId'] = raspberricId
+	result['begin_date'] = begin_date
+	result['price_option'] = price_option
+	result['delta_consumption'] = consumption
+	result['measure'] = measure['data']
+
+	return result # json.dumps(result)
