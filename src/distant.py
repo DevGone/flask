@@ -1,5 +1,5 @@
 import threading, time, requests, json
-from raspberric import get_last_hour_consumption, get_informations
+from raspberric import get_yesterday_consumption, get_informations, get_date_now
 
 POLLING = False
 
@@ -25,7 +25,7 @@ def fetchRaspberricData(measureId, raspberricIds):
 	print 'Fetching data from raspberrics...'
 	for raspberricId in raspberricIds :
 		info = json.loads(get_informations(raspberricId))
-		measure = json.loads(get_last_hour_consumption(raspberricId))
+		measure = json.loads(get_yesterday_consumption(raspberricId))
 		jsonResult = parseResults(raspberricId, info, measure)
 		data.append(jsonResult)
 	print 'Data fetched'
@@ -73,6 +73,7 @@ def parseResults(raspberricId, info, measure):
 	result['raspberricId'] = raspberricId
 	result['begin_date'] = begin_date
 	result['price_option'] = price_option
+	result['raising_date'] = get_date_now()
 	result['delta_consumption'] = consumption
 	result['measure'] = measure['data']
 

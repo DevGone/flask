@@ -35,6 +35,6 @@ def getinformations():
 
 if __name__ == "__main__":
 	raspberricIds = ['vf6sxo78']
-	startPollingRaspberric(3600, raspberricIds)
+	startPollingRaspberric(60*60*24, raspberricIds)
 	startHerokuIdlingPrevention()
 	app.run()

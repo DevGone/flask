@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import requests
 import json
 
-LOCAL_ORIANE = 0
+LOCAL_ORIANE = 1
 LOCAL_OTHER = 0
 
 #TODO : Change to put the other raspberric adress
@@ -53,8 +53,8 @@ def get_consumption(raspberricId, begin_date, end_date, step):
 def get_consumption_from_now(raspberricId, step, duration_type, duration) :
 	url = correct_url(raspberricId) + "history"
 	begin_datetime = get_begin_date(duration_type, duration)
-	begin_date = convert_date(begin_datetime - timedelta(hours=3))
-	end_date = convert_date(datetime.now() - timedelta(hours=3))
+	begin_date = convert_date(begin_datetime - timedelta(hours=1))
+	end_date = convert_date(datetime.now() - timedelta(hours=1))
 
 	price_option = get_price_option(raspberricId)
 	field = convert_price_option_to_field(price_option)
@@ -66,11 +66,11 @@ def get_consumption_from_now(raspberricId, step, duration_type, duration) :
 #TODO : verifier que y a pas un decallage qui fait manquer une valeur
 # Get consumption of the last 24 hours every hour
 def get_yesterday_consumption(raspberricId) :
-	return get_consumption_from_now(raspberricId, 3600, 'day', 1)
+	return get_consumption_from_now(raspberricId, 60*10, 'day', 1)
 
 # Get consumption of the last hour every 10 minutes
 def get_last_hour_consumption(raspberricId) :
-	return get_consumption_from_now(raspberricId, 600, 'hour', 1)
+	return get_consumption_from_now(raspberricId, 60*10, 'hour', 1)
 
 # Get a date before now in fonction of duration type and duration value
 def get_begin_date(duration_type, duration):
@@ -88,6 +88,10 @@ def get_begin_date(duration_type, duration):
 # Concert datetime in the system wanted by the raspberric
 def convert_date(value):
 	return str(datetime.date(value)) + 'T' + str(datetime.time(value)) + 'Z'
+
+# Get datetime now in the correct format
+def get_date_now():
+	return convert_date(datetime.now())
 
 
 ##### WE DON'T USE IT #######
