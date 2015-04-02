@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import requests
 import json
 
-LOCAL_ORIANE = 1
+LOCAL_ORIANE = 0
 LOCAL_OTHER = 0
 
 #TODO : Change to put the other raspberric adress
